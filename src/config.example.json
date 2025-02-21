@@ -1,0 +1,22 @@
+{
+  "rootURL": "https://unjobs.org",
+  "organizations": [
+    {
+      "name": "UNESCO - United Nations Educational, Scientific and Cultural Organization",
+      "url": "https://unjobs.org/organizations/unesco",
+      "code": "unesco"
+    }
+  ],
+  "locations": [
+    {
+      "name": "Incheon, Republic of Korea",
+      "url": "https://unjobs.org/duty_stations/icn",
+      "code": "icn"
+    }
+  ],
+  "keywords": [
+    "education",
+    "science",
+    "culture"
+  ]
+}
