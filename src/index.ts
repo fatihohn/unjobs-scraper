@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import cron from "node-cron";
 import { ApiClient } from "./lib/api-client";
 import { JobCollectorDaemon } from "./daemon/job-collector.daemon";
 import { DB } from "./lib/database";
@@ -16,14 +17,16 @@ const jobCollectorDaemon = new JobCollectorDaemon(
   }
 );
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-jobCollectorDaemon.init().then(async () => {
-  while (true) {
-    try {
-      await jobCollectorDaemon.collectJobs();
-    } catch (error) {
-      console.error("Job collection failed", error);
+cron.schedule("0 9 * * 1", () => {
+  jobCollectorDaemon.init().then(async () => {
+    let isDone = false;
+    while (!isDone) {
+      try {
+        await jobCollectorDaemon.collectJobs();
+        isDone = true;
+      } catch (error) {
+        console.error("Job collection failed", error);
+      }
     }
-  }
+  });
 });
