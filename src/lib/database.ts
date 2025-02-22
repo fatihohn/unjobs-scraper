@@ -1,24 +1,51 @@
-import Database from 'better-sqlite3';
+import Database, {
+  Database as DatabaseType,
+  BackupOptions,
+} from "better-sqlite3";
 
-// Open database
-const db = new Database('database.sqlite');
+export class DB {
+  static instance: DB;
+  public db: DatabaseType;
+  static dbPath: string;
 
-// Create table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT UNIQUE
-  )
-`);
+  constructor(public dbPath: string = "") {
+    if (DB.instance) {
+      return DB.instance;
+    } else {
+      this.dbPath = dbPath;
+      this.db = new Database(dbPath);
+      DB.instance = this;
+    }
+  }
 
-// Insert data
-const insert = db.prepare(`INSERT INTO users (name, email) VALUES (?, ?)`);
-insert.run('Bob', 'bob@example.com');
+  static getInstance() {
+    if (!DB.instance) {
+      DB.instance = new DB(this.dbPath);
+    }
 
-// Query data
-const users = db.prepare(`SELECT * FROM users`).all();
-console.log('Users:', users);
+    return DB.instance;
+  }
 
-// Close database
-db.close();
+  exec(sql: string): DatabaseType {
+    return this.db.exec(sql);
+  }
+
+  prepare(sql: string): Database.Statement {
+    return this.db.prepare(sql);
+  }
+
+  transaction(fn: (...params: any[]) => unknown): Database.Transaction {
+    return this.db.transaction(fn);
+  }
+
+  close(): DatabaseType {
+    return this.db.close();
+  }
+
+  backup(
+    destinationFile: string,
+    options?: BackupOptions
+  ): Promise<Database.BackupMetadata> {
+    return this.db.backup(destinationFile, options);
+  }
+}

@@ -2,7 +2,10 @@
 .idea
 .vscode
 
+.env
+
 node_modules
 dist
 src/config.json
 data
+*.sqlite
