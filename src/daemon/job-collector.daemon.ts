@@ -62,6 +62,9 @@ export class JobCollectorDaemon {
             },
             dutyStation: { name: location.name, code: location.code },
             keywords: this.keywords,
+          }).catch(error => {
+            console.error(`Failed to fetch jobs for ${organization.name} at ${location.name}`, error);
+            throw error;
           });
 
           if (organizationJobs.length > 0) {
