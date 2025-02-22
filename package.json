@@ -25,12 +25,16 @@
     "dotenv": "^16.4.7",
     "googleapis": "^144.0.0",
     "json2csv": "^6.0.0-alpha.2",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
-  }
+    "@types/node-cron": "^3",
+    "nodemon": "^3.1.9",
+    "pm2": "5.4.3"
+  },
+  "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"
 }

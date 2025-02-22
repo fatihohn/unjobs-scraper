@@ -1,0 +1,15 @@
+services:
+  unjobs-scraper:
+    build:
+      context: .
+    container_name: unjobs-scraper
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./data:/app/src/data
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
+    restart: unless-stopped
