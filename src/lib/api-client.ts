@@ -63,9 +63,9 @@ export class ApiClient {
       });
 
       if (!response.ok) {
-        const errorResponse = await response.json();
+        const errorResponse = await response.text();
 
-        throw new Error(errorResponse?.message ?? response.status);
+        throw new Error(errorResponse ?? response.status.toString());
       }
       return await response.text();
     } catch (error) {
