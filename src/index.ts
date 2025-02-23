@@ -17,7 +17,7 @@ const jobCollectorDaemon = new JobCollectorDaemon(
   }
 );
 
-cron.schedule("0 9 * * 1", () => {
+cron.schedule("0 * * * *", () => {
   jobCollectorDaemon.init().then(async () => {
     let isDone = false;
     while (!isDone) {
