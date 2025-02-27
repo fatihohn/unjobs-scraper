@@ -20,7 +20,7 @@ const jobCollectorDaemon = new JobCollectorDaemon(
   }
 );
 
-cron.schedule("0 * * * *", () => {
+const collectJobs = async () => {
   jobCollectorDaemon.init().then(async () => {
     let isDone = false;
     while (!isDone) {
@@ -40,4 +40,9 @@ cron.schedule("0 * * * *", () => {
       }
     }
   });
-});
+};
+
+// run once on startup
+collectJobs();
+
+cron.schedule("0 * * * *", collectJobs);
