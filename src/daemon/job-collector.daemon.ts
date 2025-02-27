@@ -64,7 +64,7 @@ export class JobCollectorDaemon {
             keywords: this.keywords,
           }).catch(error => {
             console.error(`Failed to fetch jobs for ${organization.name} at ${location.name}`, error);
-            throw error;
+            throw new Error(`Failed to fetch jobs for ${organization.name} at ${location.name}: ${error.message}`);
           });
 
           if (organizationJobs.length > 0) {
