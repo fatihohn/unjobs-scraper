@@ -23,6 +23,7 @@ const jobCollectorDaemon = new JobCollectorDaemon(
 const collectJobs = async () => {
   jobCollectorDaemon.init().then(async () => {
     let isDone = false;
+    let retries = 0;
     while (!isDone) {
       try {
         await jobCollectorDaemon.collectJobs();
@@ -30,12 +31,15 @@ const collectJobs = async () => {
         console.error("Job collection complete", new Date());
       } catch (error) {
         console.error("Job collection failed", error);
-        await mailer.sendEmail(
-          process.env.GMAIL_USER,
-          "Job collection failed",
-          "Job collection failed",
-          error.message
-        );
+        retries++;
+        if (retries > 5) {
+          await mailer.sendEmail(
+            process.env.GMAIL_USER,
+            "Job collection failed",
+            "Job collection failed",
+            error.message
+          );
+        }
         await new Promise((resolve) => setTimeout(resolve, 60000));
       }
     }
