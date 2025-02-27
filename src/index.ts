@@ -28,9 +28,8 @@ const collectJobs = async () => {
       try {
         await jobCollectorDaemon.collectJobs();
         isDone = true;
-        console.error("Job collection complete", new Date());
+        console.log("Job collection complete", new Date());
       } catch (error) {
-        console.error("Job collection failed", error);
         retries++;
         if (retries > 5) {
           await mailer.sendEmail(
