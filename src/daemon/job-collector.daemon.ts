@@ -88,11 +88,11 @@ export class JobCollectorDaemon {
               console.log(`New job added: ${job.title}`);
               this.mailer.sendEmail(
                 process.env.GMAIL_USER,
-                `[UNJobs Scraper] New job added - ${job.title}`,
-                `A new job has been added: ${job.title}`,
+                `[UNJobs Scraper] New job added - ${job.title} at ${job.organization}`,
+                `A new job has been added: ${job.title} at ${job.organization} in ${job.dutyStation}`,
                 `<div>
                       <div>
-                        <a href="${job.url}">${job.title}</a>
+                        <a href="${job.url}">${job.title} at ${job.organization}</a>
                       <div>
                       <div>${job.snippet}</div>
                     </div>`
