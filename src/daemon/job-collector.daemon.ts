@@ -47,72 +47,62 @@ export class JobCollectorDaemon {
     const currentJobCount = await this.getDbJobCount();
     console.log(`Current job count: ${currentJobCount}`);
     const jobsAPI = new JobsAPI(this.apiClient);
-
     const jobs = [];
-    const organizationsCount = this.organizations.length;
-    let organizationIndex = 0;
-    for (const organization of this.organizations) {
-      const promises = [];
-      for (const location of this.locations) {
-        promises.push(async () => {
-          const organizationJobs = await jobsAPI.getJobs({
-            organization: {
-              name: organization.name,
-              code: organization.code,
-            },
-            dutyStation: { name: location.name, code: location.code },
-            keywords: this.keywords,
-          }).catch(error => {
-            console.error(`Failed to fetch jobs for ${organization.name} at ${location.name}`, error);
-            throw new Error(`Failed to fetch jobs for ${organization.name} at ${location.name}: ${error.message}`);
-          });
 
-          if (organizationJobs.length > 0) {
-            jobs.push(...organizationJobs);
+    for (const location of this.locations) {
+      const locationJobs = await jobsAPI
+        .getJobs({
+          dutyStation: { name: location.name, code: location.code },
+          keywords: this.keywords,
+        })
+        .catch((error) => {
+          console.error(
+            `Failed to fetch jobs for ${location.name} at ${location.name}`,
+            error
+          );
+          throw new Error(
+            `Failed to fetch jobs for ${location.name} at ${location.name}: ${error.message}`
+          );
+        });
 
-            const insert = this.db.prepare(
-              "INSERT INTO jobs (id, title, url, snippet, organization, dutyStation, time) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING"
+      if (locationJobs.length > 0) {
+        jobs.push(...locationJobs);
+
+        const insert = this.db.prepare(
+          "INSERT INTO jobs (id, title, url, snippet, organization, dutyStation, time) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING"
+        );
+
+        for (const job of locationJobs) {
+          try {
+            const insertResult = insert.run(
+              job.id,
+              job.title,
+              job.url,
+              job.snippet,
+              job.organization,
+              job.dutyStation,
+              job.time.toISOString()
             );
 
-            for (const job of organizationJobs) {
-              try {
-                const insertResult = insert.run(
-                  job.id,
-                  job.title,
-                  job.url,
-                  job.snippet,
-                  job.organization,
-                  job.dutyStation,
-                  job.time.toISOString()
-                );
-
-                if (insertResult.changes) {
-                  console.log(`New job added: ${job.title}`);
-                  this.mailer.sendEmail(
-                    process.env.GMAIL_USER,
-                    `[UNJobs Scraper] New job added - ${job.title}`,
-                    `A new job has been added: ${job.title}`,
-                    `<div>
+            if (insertResult.changes) {
+              console.log(`New job added: ${job.title}`);
+              this.mailer.sendEmail(
+                process.env.GMAIL_USER,
+                `[UNJobs Scraper] New job added - ${job.title}`,
+                `A new job has been added: ${job.title}`,
+                `<div>
                       <div>
                         <a href="${job.url}">${job.title}</a>
                       <div>
                       <div>${job.snippet}</div>
                     </div>`
-                  );
-                }
-              } catch (error) {}
+              );
             }
+          } catch (error) {
+            console.error("Failed to insert job", error);
           }
-        });
+        }
       }
-
-      await Promise.all(promises.map((p) => p()));
-
-      organizationIndex++;
-      console.log(
-        `Fetched jobs for ${organizationIndex} of ${organizationsCount} organizations`,
-        `Total jobs fetched: ${jobs.length}`
-      );
     }
   }
 }

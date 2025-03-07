@@ -6,15 +6,17 @@ export class JobsAPI {
   constructor(private apiClient: ApiClient) {}
 
   async getJobs(dto: {
-    organization: Organization;
+    organization?: Organization;
     dutyStation?: DutyStation;
     keywords?: string[];
   }) {
     const { organization, dutyStation, keywords } = dto;
-    if (dutyStation) {
-      return this.getDutyStationJobs(organization, dutyStation, keywords);
-    } else {
+    if (organization && dutyStation) {
+      return this.getOrganizationDutyStationJobs(organization, dutyStation, keywords);
+    } else if (organization) {
       return this.getOrganizationJobs(organization, keywords);
+    } else {
+      return this.getDutystationJobs(dutyStation, keywords);
     }
   }
 
@@ -78,7 +80,7 @@ export class JobsAPI {
     return jobs;
   }
 
-  async getDutyStationJobs(
+  async getOrganizationDutyStationJobs(
     organization: Organization,
     dutyStation: DutyStation,
     keywords?: string[]
@@ -120,6 +122,64 @@ export class JobsAPI {
                   (keyword) =>
                     job.title.toLowerCase().includes(keyword.toLowerCase()) ||
                     job.snippet.toLowerCase().includes(keyword.toLowerCase())
+                )
+              ) {
+                jobs.push(job);
+              }
+            } else {
+              jobs.push(job);
+            }
+          }
+        });
+        page++;
+      } else {
+        break;
+      }
+    }
+
+    return jobs;
+  }
+
+  async getDutystationJobs(dutyStation: DutyStation, keywords?: string[]) {
+    const url = "/duty_stations/:param";
+    const param = dutyStation.code;
+
+    let isMorePages = true;
+    let page = 1;
+    const jobs = [];
+
+    while (isMorePages) {
+      const response = await this.fetchJobsPage(url, param, page);
+      const $ = cheerio.load(response);
+      const jobElements = $(".job");
+
+      if (jobElements.length > 0) {
+        jobElements.each((index, element) => {
+          const jobElement = $(element);
+          const title = jobElement.find(".jtitle").text();
+          const organization = jobElement.html().split('<br>')[1]?.trim();
+          const url = jobElement.find("a").attr("href");
+          const snippet = jobElement?.find(".jobsnippet .fp-snippet")?.text();
+          const time = new Date(jobElement.find("time").attr("datetime"));
+          const id = jobElement.attr("id");
+
+          const job = {
+            id,
+            title,
+            url,
+            snippet,
+            organization,
+            dutyStation: dutyStation.name,
+            time,
+          };
+
+          if (id) {
+            if (keywords) {
+              if (
+                keywords.some(
+                  (keyword) =>
+                    job.title.toLowerCase().includes(keyword.toLowerCase()) ||
+                    job.snippet?.toLowerCase()?.includes(keyword.toLowerCase())
                 )
               ) {
                 jobs.push(job);
