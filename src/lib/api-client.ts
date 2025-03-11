@@ -69,6 +69,7 @@ export class ApiClient {
       }
       return await response.text();
     } catch (error) {
+      console.error("GET request failed", error);
       throw error;
     }
   }
