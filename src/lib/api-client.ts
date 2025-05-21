@@ -65,11 +65,11 @@ export class ApiClient {
       if (!response.ok) {
         const errorResponse = await response.text();
 
-        throw new Error(errorResponse ?? response.status.toString());
+        throw new Error(`${response.status.toString()}: ${errorResponse ?? ""}`);
       }
       return await response.text();
     } catch (error) {
-      console.error("GET request failed", error);
+      console.error(`GET request failed`, error);
       throw error;
     }
   }
