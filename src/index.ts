@@ -8,7 +8,6 @@ import { Mailer } from "./lib/mailer";
 const config = JSON.parse(readFileSync(`${__dirname}/config.json`, "utf-8"));
 const { rootURL, organizations, locations, keywords } = config;
 const apiClient = new ApiClient(rootURL);
-const mailer = Mailer.getInstance();
 
 const jobCollectorDaemon = new JobCollectorDaemon(
   apiClient,
@@ -21,6 +20,8 @@ const jobCollectorDaemon = new JobCollectorDaemon(
 );
 
 const collectJobs = async () => {
+  const mailer = await Mailer.getInstance();
+
   jobCollectorDaemon.init().then(async () => {
     let isDone = false;
     let retries = 0;

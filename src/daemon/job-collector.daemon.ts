@@ -23,14 +23,14 @@ export class JobCollectorDaemon {
     private db: DB,
     options: JobCollectorDaemonOptions
   ) {
-    this.mailer = Mailer.getInstance();
     this.db = DB.getInstance();
     this.organizations = options.organizations;
     this.locations = options.locations;
     this.keywords = options.keywords;
   }
-
+  
   async init() {
+    this.mailer = await Mailer.getInstance();
     this.db.exec(
       "CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, title TEXT, url TEXT, snippet TEXT, organization TEXT, dutyStation TEXT, time TEXT)"
     );
